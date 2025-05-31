@@ -2,26 +2,15 @@ import sys
 
 
 def solution():
-    num = int(sys.stdin.readline().rstrip())
-    is_prime = False
-    even_nums = []
+    s = sorted(sys.stdin.readline().rstrip())
+    t = sorted(sys.stdin.readline().rstrip())
 
-    while not is_prime:
-        i = 2
-        while i**2 <= num:
-            if num % i == 0:
-                even_nums.append(i)
-                num //= i
-                break
-            i += 1
+    for i in range(len(s)):
+        if s[i] != t[i]:
+            return t[i]
 
-        if i**2 > num:
-            is_prime = True
-            even_nums.append(num)
-
-    even_nums.sort()
-    print(*even_nums)
+    return t[-1]
 
 
 if __name__ == "__main__":
-    solution()
+    sys.stdout.write(solution())
