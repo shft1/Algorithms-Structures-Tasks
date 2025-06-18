@@ -1,7 +1,7 @@
 import sys
 
 
-class Dequeue:
+class CircularBufferedDequeue:
     def __init__(self, m):
         self.items = [None] * m
         self.size = 0
@@ -56,7 +56,7 @@ def solution():
     n = int(sys.stdin.readline().rstrip())
     m = int(sys.stdin.readline().rstrip())
 
-    dequeue = Dequeue(m)
+    dequeue = CircularBufferedDequeue(m)
 
     for _ in range(n):
         cmd = sys.stdin.readline().rstrip()
