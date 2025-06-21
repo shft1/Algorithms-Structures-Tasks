@@ -1,7 +1,68 @@
+"""
+ID посылки - https://contest.yandex.ru/contest/22781/run-report/139395511/
+
+-- ПРИНЦИП РАБОТЫ --
+
+Я реализовал интерфейс работы с данными - дек, построенный на кольцевом буфере.
+У дека есть две стороны - фронт и бек часть, операции с этих сторон выполняются за О(1).
+
+Под каждую из частей я завожу по указателю, которые, изначально, находятся на двух центральных позициях дека,
+сделано так, поскольку дек проще воспринимать, когда мы работает с ним исходя из его центра.
+
+Принцип работы указателей: указатели всегда указывают на элемент, который находится на вершине
+соответствующей ему части.
+
+При добавлении элемента, мы вначале сдвигаем указатель, а потом на его место ставим элемент.
+При извлечении, мы удаляем тот элемент, на который указывает указатель, а после этого отодвигаем его
+на предыдущий элемент дека.
+
+Кольцевой буфер используется, когда у нас есть ограничение на размер данных и нам нужно максимизировать
+характеристику занимаемой памяти для ее оптимального использования.
+
+Каждый из указателей должен иметь циклично обходить массив в обе стороны
+
+-- ДОКАЗАТЕЛЬСТВО КОРРЕКТНОСТИ --
+
+Дек - это двунаправленная очередь.
+
+Очередь - это интерфейс, который работает по принципу FIFO, в котором извлечение и добавление
+элементов происходит с разных сторон.
+
+В двунаправленной очереди FIFO работает с двух сторон, то есть добавлять и удалять элементы мы можем с обеих сторон.
+
+Получается как бы смежный стек, где каждый указатель может перемещаться в обе стороны.
+
+В моем решении указатели последовательно и циклично передвигаются в обе стороны массива.
+Поскольку реализация происходит через кольцевой буфер, то нам нужно следить за тем,
+чтобы элементы не переприсваиваивались, для этого я веду счетчик размера дека в каждый конкретный момент.
+
+В итоге происходит последовательное, цикличное перемещение указателей в обе стороны,
+с защитой от переприсваивания элементов.
+
+Таким образом алгоритм корректен.
+
+-- ВРЕМЕННАЯ СЛОЖНОСТЬ --
+
+Данная реализация дека основанна на статичном массиве, в котором добавление и удаление элементов происходит по индексу.
+В массиве, обращение по индексу занимает O(1), следовательно, по определению дека, интерфейс реализован правильно
+и каждая операция выполняется за О(1).
+Так как кол-во таких операций определяется кол-вом команд, которые поступают на вход, получается,
+что временная сложность данного алгоритма равно O(n), где n - кол-во команд, которые поступают вход программе.
+
+Итоговая временная сложность - O(n)
+
+-- ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ --
+
+Потребляемая память зависит от размера дека, т.е. от размера массива, на котором он построен.
+Размера массива задается параметром m, следовательно потребление дека по памяти будет занимать O(m)
+
+Итоговая пространственная сложность - O(m)
+"""
+
 import sys
 
 
-class CircularBufferedDequeue:
+class RingBufferedDeque:
     def __init__(self, m):
         self.items = [None] * m
         self.size = 0
@@ -11,8 +72,7 @@ class CircularBufferedDequeue:
 
     def push_back(self, value):
         if self.size == self.max_size:
-            sys.stdout.write("error\n")
-            return
+            raise RuntimeError("Дек переполнен !")
 
         self.back_p = (self.back_p + 1) % self.max_size
         self.items[self.back_p] = value
@@ -20,8 +80,7 @@ class CircularBufferedDequeue:
 
     def push_front(self, value):
         if self.size == self.max_size:
-            sys.stdout.write("error\n")
-            return
+            raise RuntimeError("Дек переполнен !")
 
         self.front_p = (
             self.max_size - 1 if self.front_p == 0 else self.front_p - 1
@@ -31,44 +90,51 @@ class CircularBufferedDequeue:
 
     def pop_back(self):
         if self.size == 0:
-            sys.stdout.write("error\n")
-            return
+            raise RuntimeError("Дек пустой !")
 
-        sys.stdout.write(f"{self.items[self.back_p]}\n")
+        poping_el = self.items[self.back_p]
         self.items[self.back_p] = None
         self.size -= 1
         self.back_p = (
             self.max_size - 1 if self.back_p == 0 else self.back_p - 1
         )
+        return poping_el
 
     def pop_front(self):
         if self.size == 0:
-            sys.stdout.write("error\n")
-            return
+            raise RuntimeError("Дек пустой !")
 
-        sys.stdout.write(f"{self.items[self.front_p]}\n")
+        poping_el = self.items[self.front_p]
         self.items[self.front_p] = None
         self.size -= 1
         self.front_p = (self.front_p + 1) % self.max_size
+        return poping_el
 
 
 def solution():
     n = int(sys.stdin.readline().rstrip())
     m = int(sys.stdin.readline().rstrip())
 
-    dequeue = CircularBufferedDequeue(m)
+    res_cmds = []
+    dequeue = RingBufferedDeque(m)
 
     for _ in range(n):
         cmd = sys.stdin.readline().rstrip()
-        if cmd.startswith("push_back"):
-            dequeue.push_back(int(cmd.split()[1]))
-        elif cmd.startswith("push_front"):
-            dequeue.push_front(int(cmd.split()[1]))
-        elif cmd.startswith("pop_back"):
-            dequeue.pop_back()
-        else:
-            dequeue.pop_front()
+        try:
+            if cmd.startswith("push_back"):
+                dequeue.push_back(int(cmd.split()[1]))
+            elif cmd.startswith("push_front"):
+                dequeue.push_front(int(cmd.split()[1]))
+            elif cmd.startswith("pop_back"):
+                res_cmds.append(str(dequeue.pop_back()))
+            else:
+                res_cmds.append(str(dequeue.pop_front()))
+        except RuntimeError:
+            res_cmds.append("error")
+
+    return res_cmds
 
 
 if __name__ == "__main__":
-    solution()
+    for el in solution():
+        sys.stdout.write(el + "\n")
