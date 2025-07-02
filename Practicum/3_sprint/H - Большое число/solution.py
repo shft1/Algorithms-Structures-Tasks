@@ -43,7 +43,7 @@ import sys
 from functools import cmp_to_key
 
 
-def comrporator(x, y):
+def comporator(x, y):
     if x + y > y + x:
         return -1
     return 1
@@ -52,7 +52,7 @@ def comrporator(x, y):
 def solution():
     n = sys.stdin.readline().rstrip()
     numbers = sys.stdin.readline().rstrip().split()
-    sys.stdout.write("".join(sorted(numbers, key=cmp_to_key(comrporator))))
+    sys.stdout.write("".join(sorted(numbers, key=cmp_to_key(comporator))))
 
 
 if __name__ == "__main__":
