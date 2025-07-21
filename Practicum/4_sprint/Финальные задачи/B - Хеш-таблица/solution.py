@@ -55,6 +55,7 @@ class HashTable:
     def __init__(self, max_el):
         self.size = max_el * 2 + 3
         self.hash_map = [None] * self.size
+        self.DELETED = "DELETED"
 
     def hash2_func(self, key):
         return key % (self.size - 1) + 1
@@ -68,7 +69,7 @@ class HashTable:
         for i in range(self.size):
             bucket_idx = (b1_idx + (i * b2_idx) % self.size) % self.size
             bucket = self.hash_map[bucket_idx]
-            if bucket is None or bucket[0] is False or bucket[0] == key:
+            if bucket is None or bucket[0] is self.DELETED or bucket[0] == key:
                 self.hash_map[bucket_idx] = (key, value)
                 return
         raise RuntimeError("Таблица переполнена!")
@@ -97,7 +98,7 @@ class HashTable:
                 raise KeyError(None)
             k, v = bucket
             if key == k:
-                self.hash_map[bucket_idx] = (False, False)
+                self.hash_map[bucket_idx] = (self.DELETED, self.DELETED)
                 return v
         raise RuntimeError("Таблица переполнена!")
 
