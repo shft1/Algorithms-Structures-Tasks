@@ -5,7 +5,7 @@ def solution(n):
     # numTree [4] = numTree[0] * numTree[3] +
     #               numTree [1] * numTree[2] +
     #               numTree [2] * numTree[1] +
-    #               numTree [3] * numTree [1]
+    #               numTree [3] * numTree [0]
     numsTree = [1] * (n + 1)  # результаты подзадач
     for nodes in range(2, n + 1):  # считаю каждую подзадачу
         total = 0
