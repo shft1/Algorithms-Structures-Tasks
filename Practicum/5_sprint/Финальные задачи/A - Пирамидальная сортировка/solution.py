@@ -15,7 +15,11 @@ ID посылки - https://contest.yandex.ru/contest/24810/run-report/140560899
 
 --- Принцип работы ---
 Для данной задачи строится MinHeap куча
-1. Создание кучи
+1.1 Создание кучи (через построение на основе массива)
+Функция heapify - строит кучу на основе массива
+Главная куча создается из построения подкуч меньше размера
+Поскольку листья - это уже кучи, то мы начинаем восстановление подкуч с последнего родителя (last_idx // 2) и до 1 элемента
+1.2 Создание кучи (через поэлементное добавление)
 Каждый поступающий на вход элемент добавляется в кучу.
 Для каждой операции добавления, кроме первой, запускается процедура просеивания вверх, чтобы соответствовать св-вам кучи
 2. Поочередное извлечение самого приоритетного элемента кучи (элемента с i=1 / вершина кучи)
@@ -29,7 +33,10 @@ ID посылки - https://contest.yandex.ru/contest/24810/run-report/140560899
 --- Временная сложность ---
 Временная сложность алгоритма пирамидальной сортировки (не in-place) складывается из сложностей:
 1. Создание массива фиксированной длины -> O(1)
-2. Заполнение кучи из n элементов -> O(nlogn)
+2.1 Создание кучи через построение на основе массива -> O(n)
+Так как листья составляют примерно половину всех элементов, то получается, что функция heapify
+вызывается n/2 раз, хотя сложность heapify и составляет O(logn), можно доказать, что время работы равно O(n)
+2.2 Создание кучи через поэлементное добавление -> O(nlogn)
 Для каждой операции добавления вызывается алгоритм просеивания вверх, поскольку, по св-ву кучи,
 дерево у нас почти полное, это значит, что в худшем случае нам придется пройти все logN уровней, следовательно,
 сложность создания кучи из n элементов равна O(nlogn)
@@ -38,24 +45,27 @@ ID посылки - https://contest.yandex.ru/contest/24810/run-report/140560899
 дерево у нас почти полное, это значит, что в худшем случае нам придется пройти все logN уровней, следовательно,
 сложность извлечения из кучи n элементов равна O(nlogn)
 4. Добавление извлеченных элементов из кучи в новый, результирующий массив - O(n)
----> Итоговая временная сложность - O(1 + nlogn + nlogn + n) = O(nlogn)
+---> Итоговая временная сложность c учетом 2.1 - O(1 + n + nlogn + n) = O(nlogn)
+---> Итоговая временная сложность c учетом 2.2 - O(1 + nlogn + nlogn + n) = O(nlogn)
+Асимптотически 2.1 и 2.2 одинаковы, но 2.1 за счет heapify построения будет работать быстрее.
 
 --- Пространственная сложность ---
 Пространственная сложность алгоритма пирамидальной сортировки (не in-place) складывается из сложностей:
 1. Выделение памяти под кучу размером n -> O(n)
 2. Выделение памяти под результирующий массив отсортированных n элементов -> O(n)
----> Итоговая пространственная сложность - O(n + n) = O(n)
+3. Выделение памяти при высоте стека вызова рекурсии -> O(logn)
+---> Итоговая пространственная сложность - O(n + n + logn) = O(n)
 """
 
 import sys
 
 
 class MinHeap:
-    def __init__(self, size, func_key=lambda x: x) -> None:
+    def __init__(self, arr, size, func_key=lambda x: x) -> None:
         self.size = size
         self.last_idx = 0
         self.func_key = func_key
-        self.heap = [None] * (self.size + 1)
+        self.heap = [-1] + arr
 
     def _sift_up(self, idx: int) -> None:
         if idx == 1:
@@ -89,7 +99,7 @@ class MinHeap:
             )
             self._sift_down(min_idx)
 
-    def pop_max(self) -> list[str]:
+    def pop_min(self) -> list[str]:
         if self.last_idx == 0:
             raise RuntimeError("Куча пуста!")
         max_obj = self.heap[1]
@@ -99,25 +109,29 @@ class MinHeap:
         self._sift_down(1)
         return max_obj
 
+    def heapify(self) -> None:
+        self.last_idx = self.size
+        for i in range(self.last_idx // 2, 0, -1):
+            self._sift_down(i)
+
 
 def func_key(obj) -> tuple:
     return (-int(obj[1]), int(obj[2]), obj[0])
 
 
-def heap_sort(n: int) -> list[str]:
-    heap = MinHeap(size=n, func_key=func_key)
+def heap_sort(n: int, arr: list) -> list[str]:
+    heap = MinHeap(arr, n, func_key)
+    heap.heapify()
     try:
-        for _ in range(n):
-            obj = sys.stdin.readline().rstrip().split()
-            heap.add(obj)
-        return [heap.pop_max()[0] for _ in range(n)]
+        return [heap.pop_min()[0] for _ in range(n)]
     except RuntimeError as e:
         return f"Ошибка-при-работе-с-кучей--->{e}"
 
 
 def main():
     n: int = int(sys.stdin.readline().rstrip())
-    res: list[str] = heap_sort(n)
+    arr: list = [sys.stdin.readline().rstrip().split() for _ in range(n)]
+    res: list[str] = heap_sort(n, arr)
     sys.stdout.write("\n".join(res))
 
 
