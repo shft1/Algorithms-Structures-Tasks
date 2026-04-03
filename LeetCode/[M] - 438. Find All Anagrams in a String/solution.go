@@ -3,30 +3,27 @@ package main
 import "maps"
 
 func findAnagrams(s string, p string) []int {
-	if len(p) > len(s) {
-		return []int{}
+	if len(s) < len(p) {
+		return nil
 	}
-	pattern := make(map[byte]int, len(p))
-	for i := range p {
-		pattern[p[i]] += 1
-	}
-	src := make(map[byte]int)
-	for r := 0; r < len(p); r++ {
-		src[s[r]] += 1
+	wind, lay := make(map[byte]int, len(p)), make(map[byte]int, len(p))
+	for i := range len(p) {
+		wind[s[i]]++
+		lay[p[i]]++
 	}
 	var res []int
-	if maps.Equal(src, pattern) {
+	if maps.Equal(wind, lay) {
 		res = append(res, 0)
 	}
 	l := 0
 	for r := len(p); r < len(s); r++ {
-		src[s[r]] += 1
-		src[s[l]] -= 1
-		if src[s[l]] == 0 {
-			delete(src, s[l])
+		wind[s[r]]++
+		wind[s[l]]--
+		if wind[s[l]] == 0 {
+			delete(wind, s[l])
 		}
 		l++
-		if maps.Equal(src, pattern) {
+		if maps.Equal(wind, lay) {
 			res = append(res, l)
 		}
 	}

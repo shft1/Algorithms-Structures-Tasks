@@ -1,32 +1,24 @@
-from collections import defaultdict
 from typing import List
 
 
 class Solution:
     def findAnagrams(self, s: str, p: str) -> List[int]:
-        if len(p) > len(s):
+        if len(s) < len(p):
             return []
-        pattern = defaultdict(int)
-        for c in p:
-            pattern[c] += 1
-
-        src = defaultdict(int)
-        for r in range(len(p)):
-            src[s[r]] += 1
-
-        l = 0
-
+        wind, lay = {}, {}
+        for i in range(len(p)):
+            wind[s[i]] = wind.get(s[i], 0) + 1
+            lay[p[i]] = lay.get(p[i], 0) + 1
         res = []
-        if src == pattern:
-            res.append(l)
-
+        if wind == lay:
+            res.append(0)
+        l = 0
         for r in range(len(p), len(s)):
-            src[s[r]] += 1
-            src[s[l]] -= 1
-            if src[s[l]] == 0:
-                del src[s[l]]
+            wind[s[r]] = wind.get(s[r], 0) + 1
+            wind[s[l]] -= 1
+            if wind[s[l]] == 0:
+                del wind[s[l]]
             l += 1
-            if src == pattern:
+            if wind == lay:
                 res.append(l)
-
         return res
